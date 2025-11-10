@@ -1,0 +1,56 @@
+from fastapi import FastAPI
+from scanners.headers import check_security_headers
+from scanners.ssl_checker import check_ssl_certificate
+
+
+app = FastAPI(
+    title="Breachless API",
+    description="Automated Website Security Audit API",
+    version="0.1.0"
+)
+
+@app.get("/")
+def home():
+    return {"message": "Welcome to Breachless API"}
+
+@app.get("/scan/{domain}")
+def scan_domain(domain: str):
+    """
+    Run a simple security headers scan for a given domain.
+    Example: /scan/example.com
+    """
+    results = check_security_headers(domain)
+    return {"domain": domain, "headers": results}
+
+@app.get("/ssl/{domain}")
+def ssl_scan(domain: str):
+    """
+    Run an SSL/TLS certificate check for a given domain.
+    Example: /ssl/example.com
+    """
+    results = check_ssl_certificate(domain)
+    return {"domain": domain, "ssl": results}
+
+
+@app.get("/audit/{domain}")
+def full_audit(domain: str):
+    headers_result = check_security_headers(domain)
+    ssl_result = check_ssl_certificate(domain)
+
+    # Count how many headers are missing
+    missing_headers = [h for h, v in headers_result.items() if v == "❌ Missing"]
+
+    summary = {
+        "total_headers_checked": len(headers_result),
+        "headers_missing": len(missing_headers),
+        "ssl_valid": ssl_result.get("valid", False)
+    }
+
+    report = {
+        "domain": domain,
+        "summary": summary,
+        "headers": headers_result,
+        "ssl": ssl_result
+    }
+
+    return report
