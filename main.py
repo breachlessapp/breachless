@@ -56,18 +56,43 @@ def full_audit(domain: str):
 
     # Count how many headers are missing
     missing_headers = [h for h, v in headers_result.items() if v == "❌ Missing"]
+    present_headers = len(headers_result) - len(missing_headers)
+
+    # ---- SCORING SYSTEM ----
+    # 6 headers = 60 points max (10 each)
+    header_score = present_headers / len(headers_result) * 60  
+
+    # SSL score = 40 points if valid, 0 otherwise
+    ssl_score = 40 if ssl_result.get("valid", False) else 0
+
+    total_score = int(header_score + ssl_score)
+
+    # Convert score → letter grade
+    if total_score >= 90:
+        letter = "A"
+    elif total_score >= 80:
+        letter = "B"
+    elif total_score >= 70:
+        letter = "C"
+    elif total_score >= 60:
+        letter = "D"
+    else:
+        letter = "F"
 
     summary = {
         "total_headers_checked": len(headers_result),
         "headers_missing": len(missing_headers),
-        "ssl_valid": ssl_result.get("valid", False)
+        "ssl_valid": ssl_result.get("valid", False),
+        "score": total_score,
+        "letter_grade": letter,
     }
 
     report = {
         "domain": domain,
         "summary": summary,
         "headers": headers_result,
-        "ssl": ssl_result
+        "ssl": ssl_result,
     }
 
     return report
+
