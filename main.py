@@ -1,6 +1,7 @@
 from fastapi import FastAPI
 from scanners.headers import check_security_headers
 from scanners.ssl_checker import check_ssl_certificate
+from fastapi.middleware.cors import CORSMiddleware
 
 
 app = FastAPI(
@@ -8,6 +9,23 @@ app = FastAPI(
     description="Automated Website Security Audit API",
     version="0.1.0"
 )
+
+# ✅ CORS must be OUTSIDE the FastAPI() constructor
+origins = [
+    "http://localhost:3000",      # Next.js dev
+    "https://breachless.app",     # Production domain
+    "https://www.breachless.app",
+]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+
 
 @app.get("/")
 def home():
