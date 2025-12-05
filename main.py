@@ -11,15 +11,14 @@ app = FastAPI(
 )
 
 # ✅ CORS must be OUTSIDE the FastAPI() constructor
-origins = [
-    "http://localhost:3000",      # Next.js dev
-    "https://breachless.app",     # Production domain
-    "https://www.breachless.app",
-]
-
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=origins,
+    allow_origins=[
+        "http://localhost:3000",
+        "https://breachless.app",
+        "https://www.breachless.app",
+    ],
+    allow_origin_regex=r"https://.*\.vercel\.app",
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
